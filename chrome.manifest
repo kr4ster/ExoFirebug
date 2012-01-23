@@ -1,0 +1,5 @@
+content		exofirebug	chrome/content/
+skin		exofirebug	classic/1.0			chrome/skin/classic/
+locale		exofirebug	en-US				locale/en-US/
+
+overlay chrome://firebug/content/firebugOverlay.xul    chrome://exofirebug/content/exofirebug.xul

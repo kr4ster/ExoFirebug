@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+
+<RDF	xmlns="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+		xmlns:em="http://www.mozilla.org/2004/em-rdf#">
+
+	<Description about="urn:mozilla:install-manifest">
+		<em:id>exofirebug@exosuite.org</em:id>
+		<em:version>0.1</em:version>
+		<em:type>2</em:type>
+		<em:name>ExoFirebug</em:name>
+		<em:description>An extension to Firebug that supports ExoWeb</em:description>
+		<em:creator>Bobby Dimmick</em:creator>
+		<em:homepageURL>http://www.exosuite.org/ExoFirebug</em:homepageURL>
+		
+		<em:targetApplication>
+			<Description>
+				<em:id>toolkit@mozilla.org</em:id>
+				<em:minVersion>1.9.0.*</em:minVersion>
+				<em:maxVersion>11.0a1</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+
+	    <!-- Firefox, at least one valid target application needed by AMO -->
+		<em:targetApplication>
+			<Description>
+				<em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id>
+				<em:minVersion>3.0</em:minVersion>
+				<em:maxVersion>10.*</em:maxVersion>
+			</Description>
+		</em:targetApplication>
+
+		<!-- Firebug xxxHonza: see Issue 17, Comment #3
+		<em:requires>
+			<Description>
+				<em:id>firebug@software.joehewitt.com</em:id>
+				<em:minVersion>1.5*</em:minVersion>
+				<em:maxVersion>1.8*</em:maxVersion>
+			</Description>
+		</em:requires>-->
+	</Description>
+</RDF>
