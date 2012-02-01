@@ -2,17 +2,68 @@
 	width: 100%;
 }
 
-.modelRow {
+.toggleRow {
 	background: white;
 	white-space: nowrap;
 }
 
-.modelRow:hover {
+.hoverRow:hover {
 	background: #EFEFEF;
 	cursor: pointer;
 }
 
-.modelRow > .modelCol {
+.toggleRow.opened {
+	background: url(chrome://firebug/skin/win/twistyOpen.png) no-repeat 3px 4px;
+}
+
+.toggleRow .label {
+	font-weight: bold;
+	padding-left: 18px !important;
+	background: url(chrome://firebug/skin/win/twistyClosed.png) no-repeat 3px 4px;
+}
+
+.isClientOnly {
+	font-style: italic;
+}
+
+.indent {
+	padding-left: 18px;
+}
+
+.propertyRow {
+	cursor: default;
+	background-color: white;
+}
+		
+.propertyRow td {
+	border-bottom: 1px solid #CCCCCC;
+}
+		
+.propertyRow .label {
+	padding: 2px 0 2px 18px;
+	width: 30%;
+	font-weight: bold;
+}
+		
+.propertyRow .value {
+	padding: 2px 0 2px;
+	display: block;
+	overflow: hidden;
+	/* width: 70%; */
+}
+
+.propertyHeaderRow {
+	background-color: #C1C1C1;
+}
+
+.propertyHeader {
+	color: black;
+	padding: 2px 0 2px 9px;
+	font-weight: bold;
+}
+
+/*
+.toggleRow > .modelCol {
 	text-align: left;
 }
 
@@ -20,13 +71,13 @@
 	padding: 2px 0 3px 0 !important;
 }
 
-.modelRow .topTypeLabel {
+.toggleRow .topTypeLabel {
 	background-image: url(chrome://firebug/skin/win/twistyClosed.png);
 	background-repeat: no-repeat;
 	background-position: 3px 4px;
 }
 
-.modelRow.opened .topTypeLabel {
+.toggleRow.opened .topTypeLabel {
 	background-image: url(chrome://firebug/skin/win/twistyOpen.png);
 }
 
@@ -68,7 +119,7 @@
 	width: 100%;
 }
 
-.modelRowBox {
+.toggleRowBox {
 	padding-left: 14px;
 }
 
@@ -85,3 +136,4 @@
 	padding: 2px 0 2px 8px;
 	font-weight: bold;
 }
+*/

@@ -47,7 +47,7 @@ ExoFirebugPanel.prototype = extend(Firebug.Panel,
 		} else {
 			this.showToolbarButtons("fbExo_firebugButtons", true);
 			ModelTemplate.showModel(this.panelNode, view.context);
-		}
+		}		
 	},
 
 	hide: function () {
@@ -94,6 +94,132 @@ ExoPropertyPanel.prototype = extend(Firebug.Panel,
 	}
 });
 
+function ExoInstancePanel() { }
+ExoInstancePanel.prototype = extend(Firebug.Panel,
+{
+	name: "instancepanel",
+	title: "Instances",
+	parentPanel: panelName,
+	view: null,
+	
+	initialize: function(context, doc) {
+		Firebug.Panel.initialize.apply(this, arguments);
+
+		this.view = FBL.getContentView(this.context.window);
+		this.setSelection = bind(this.setSelection, this);
+		this.mainPanel.panelNode.addEventListener("mouseup", this.setSelection, false);
+	},
+	
+	show: function() {
+		Firebug.Panel.show.apply(this, arguments);
+	},
+	
+	getType: function(event) {
+		var object = event.target.repObject;
+		if (!object && event.target.wrappedJSObject)
+			object = event.target.wrappedJSObject.repObject;
+
+		if (object && (object instanceof this.view.ExoWeb.Model.Type))
+			return object;
+	},
+	
+	setSelection: function (event) {
+		var _type = this.getType(event);
+		if (_type) {
+			InstanceTemplate.showInstances(this.panelNode, _type, this.view);
+		} else {
+			WarningTemplate.showNoTypeSelected(this.panelNode);
+		}
+	}
+});
+
+var InstanceTemplate = domplate(Firebug.Rep,
+{
+	exoweb: null,
+	
+	tag:
+		TABLE({ "class": "wideTable", cellpadding: 0, cellspacing: 0 },
+			TBODY(
+				FOR("instance", "$type|getInstances",
+					TR({ "class": "toggleRow hoverRow", onclick: "$onClickRow", _repObject: "$instance" },
+						TD({ "class": "label indent" }, "$instance.name")
+					)
+				)
+			)
+		),
+
+	propertyValues:
+		TABLE({ "class": "wideTable", cellpadding: 0, cellspacing: 0 },
+			TBODY(
+				FOR("property", "$instance|getProperties",
+					TR({ "class": "propertyRow" },
+						TD({ "class": "label" }, "$property.name"),
+						TD({ "class": "literal" }, "$property.value")
+					)
+				)
+			)
+		),
+
+	getProperties: function(instance) {
+		var propertyList = instance.meta.type.get_properties();
+		var properties = [];
+
+		for (var property in propertyList) {
+			var p = propertyList[property];
+			if (p instanceof this.exoweb.Model.Property) {
+				properties.push({
+					name: p.get_name(),
+					value: instance[p._fieldName]
+				});
+			}
+		}
+
+		return properties;
+	},
+
+	getInstances: function(type) {
+		var instances = [];
+
+		for (var instance in type._pool) {
+			instances.push({
+				name: type._pool[instance].meta.id,
+				value: type._pool[instance]
+			});
+		}
+		
+		return instances;
+	},
+
+	onClickRow: function (event) {
+		if (isLeftClick(event)) {
+			var row = getAncestorByClass(event.target, "toggleRow");
+			if (row) {
+				this.toggleRow(row);
+				cancelEvent(event);
+			}
+		}
+	},
+
+	toggleRow: function (row) {
+		toggleClass(row, "opened");
+
+		if (hasClass(row, "opened")) {
+			var instance = row.repObject;
+			if (!instance && row.wrappedJSObject)
+				instance = row.wrappedJSObject.repObject;
+
+			this.propertyValues.insertRows({ instance: instance.value }, row);
+		} else {
+			row.parentNode.removeChild(row.nextSibling);
+		}
+	},
+	
+	showInstances: function(parentNode, type, context) {
+		this.exoweb = context.ExoWeb;	
+		this.tag.replace({ type: type }, parentNode, this);
+	}
+});
+
 var WarningTemplate = domplate(Firebug.Rep,
 {
 	tag:
@@ -113,6 +239,15 @@ var WarningTemplate = domplate(Firebug.Rep,
 		};
 
 		return this.tag.replace(args, parentNode, this);
+	},
+	
+	showNoTypeSelected: function(parentNode) {
+		var args = {
+			pageTitle: "No Type Selected",
+			suggestion: "Please select a type on the left"
+		};
+		
+		return this.tag.replace(args, parentNode, this);
 	}
 });
 
@@ -122,10 +257,10 @@ var ModelTemplate = domplate(Firebug.Rep,
 		TABLE({ "class": "wideTable", cellpadding: 0, cellspacing: 0 },
 			TBODY(
 				FOR("type", "$metadata|getTypes",
-					TR({ "class": "modelRow", onclick: "$onClickRow", _repObject: "$type" },
-						TD({ "class": "modelCol" },
-							DIV({ "class": "topTypeLabel typeLabel" },
-								SPAN({ "class": "$type|isClientOnly" }, "$type._fullName")
+					TR({ "class": "toggleRow hoverRow", onclick: "$onClickRow", _repObject: "$type" },
+						TD({ "class": "label" },
+							DIV(
+								SPAN({ "class": "$type|isClientOnly", _repObject: "$type" }, "$type._fullName")
 							)
 						)
 					)
@@ -135,9 +270,9 @@ var ModelTemplate = domplate(Firebug.Rep,
 
 
 	typeBody:
-		TR({ "class": "typeBodyRow" },
-			TD({ "class": "typeBodyCol", colspan: 2 },
-				TABLE({ cellpadding: 0, cellspacing: 0 },
+		TR({ },
+			TD({ colspan: 2 },
+				TABLE({ "class": "wideTable indent", cellpadding: 0, cellspacing: 0 },
 					TBODY(
 						FOR("property", "$type._properties|getProperties",
 							TAG("$propertyRow", { property: "$property" })
@@ -148,9 +283,9 @@ var ModelTemplate = domplate(Firebug.Rep,
 		),
 
 	propertyRow:
-		TR({ "class": "modelRow" },
-			TD({ "class": "modelCol" },
-				DIV({ "class": "modelRowBox" },
+		TR({ "class": "hoverRow", _repObject: "$property" },
+			TD({ },
+				DIV({ },
 					SPAN({ "class": "propertyLink $property|isClientOnly", _repObject: "$property" }, "$property._name")
 				)
 			)
@@ -182,7 +317,7 @@ var ModelTemplate = domplate(Firebug.Rep,
 
 	onClickRow: function (event) {
 		if (isLeftClick(event)) {
-			var row = getAncestorByClass(event.target, "modelRow");
+			var row = getAncestorByClass(event.target, "toggleRow");
 			if (row) {
 				this.toggleRow(row);
 				cancelEvent(event);
@@ -222,32 +357,35 @@ var PropertyInfoTemplate = domplate(Firebug.Rep,
 	tag:
 		TABLE({ "class": "widetable", cellpadding: 0, cellspacing: 0, width: "100%" },
 			TBODY(
-				TR({ "class": "propertyInfoRow" },
-					TD({ "class": "labelCell" }, "Field Name:"),
-					TD({ "class": "valueCell" }, "$metadata._fieldName")
+				TR({ "class": "propertyHeaderRow" },
+					TD({ "class": "propertyHeader", colspan: 2 }, "Details")
 				),
-				TR({ "class": "propertyInfoRow" },
-					TD({ "class": "labelCell" }, "Label:"),
-					TD({ "class": "valueCell" }, "$metadata._label")
+				TR({ "class": "propertyRow" },
+					TD({ "class": "label" }, "Field Name:"),
+					TD({ }, "$metadata._fieldName")
 				),
-				TR({ "class": "propertyInfoRow" },
-					TD({ "class": "labelCell" }, "Is List:"),
-					TD({ "class": "valueCell" }, "$metadata._isList")
+				TR({ "class": "propertyRow" },
+					TD({ "class": "label" }, "Label:"),
+					TD({ }, "$metadata._label")
 				),
-				TR({ "class": "propertyInfoRow" },
-					TD({ "class": "labelCell" }, "Is Static:"),
-					TD({ "class": "valueCell" }, "$metadata._isStatic")
+				TR({ "class": "propertyRow" },
+					TD({ "class": "label" }, "Is List:"),
+					TD({ }, "$metadata._isList")
 				),
-				TR({ "class": "propertyInfoRow" },
-					TD({ "class": "labelCell" }, "Origin:"),
-					TD({ "class": "valueCell" }, "$metadata._origin")
+				TR({ "class": "propertyRow" },
+					TD({ "class": "label" }, "Is Static:"),
+					TD({ }, "$metadata._isStatic")
 				),
-				TR({ "class": "propertyInfoHeaderRow" },
-					TD({ "class": "propertyInfoHeaderCell", colspan: 2 }, "Rules")
+				TR({ "class": "propertyRow" },
+					TD({ "class": "label" }, "Origin:"),
+					TD({ }, "$metadata._origin")
+				),
+				TR({ "class": "propertyHeaderRow" },
+					TD({ "class": "propertyHeader", colspan: 2 }, "Rules")
 				),
 				FOR("rule", "$metadata|getRules",
-					TR({ "class": "propertyInfoRow" },
-						TD({ "class": "valueCell", colspan: 2 }, "$rule")
+					TR({ "class": "propertyRow" },
+						TD({ "class": "indent", colspan: 2 }, "$rule")
 					)
 				)
 			)
@@ -285,6 +423,7 @@ var PropertyInfoTemplate = domplate(Firebug.Rep,
 
 Firebug.registerModule(Firebug.ExoFirebugModule);
 Firebug.registerPanel(ExoFirebugPanel);
+Firebug.registerPanel(ExoInstancePanel);
 Firebug.registerPanel(ExoPropertyPanel);
 
 }

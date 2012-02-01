@@ -5,7 +5,6 @@
 
 	<commandset id="mainCommandSet">
 		<command id="cmd_exofirebugModelButton" oncommand="Firebug.ExoFirebugModel.onModelButton(FirebugContext)" />
-		<command id="cmd_exofirebugInstancesButton" oncommand="Firebug.ExoFirebugModel.onInstancesButton(FirebugContext)" />
 	</commandset>
 	
 	<toolbar id="fbToolbar" align="center" role="toolbar">
@@ -20,14 +19,6 @@
 					group="exoOptions"
 					checked="true"
 					command="cmd_exofirebugModelButton" />
-				<toolbarbutton
-					id="fbExo_instancesButton"
-					label="Instances"
-					class="toolbar-text-button"
-					type="radio"
-					group="exoOptions"
-					checked="false"
-					command="cmd_exofirebugInstancesButton" />
 			</hbox>
 		</hbox>
 	</toolbar>	
